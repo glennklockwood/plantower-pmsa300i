@@ -14,6 +14,8 @@ import busio
 import adafruit_pm25.i2c
 import Adafruit_IO
 
+from sensehat import SenseHAT
+
 SEND_KEYS = {
     "pm10 standard": None,
     "pm25 standard": "m2-dot-5",
@@ -87,6 +89,7 @@ if __name__ == "__main__":
 
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     pm25 = adafruit_pm25.i2c.PM25_I2C(i2c, None)
+    sensehat = SenseHAT(i2c)
 
     aio_key = args.key
 
@@ -110,6 +113,8 @@ if __name__ == "__main__":
                 val = aqdata[key]
             elif key == "pm25 aqi" and "pm25 standard" in aqdata:
                 val = calculate_aqi(aqdata["pm25 standard"])
+                colors = aqi2color(val)
+                sensehat.ledmatrix.clear(*colors)
             else:
                 raise KeyError(f"Unknown metric key {key}")
 
