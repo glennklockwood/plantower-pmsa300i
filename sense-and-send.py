@@ -134,8 +134,8 @@ if __name__ == "__main__":
                 if not feed:
                     continue
                 elif key == "pm25 aqi":
-                    print("Setting LED matrix to", str(colors))
                     colors = aqi2color(avg)
+                    print("Setting LED matrix to", str(colors))
                     hat.ledmatrix.clear(*colors)
                     hat.ledmatrix.update()
                 try:
