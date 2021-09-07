@@ -1,3 +1,7 @@
 adafruit-blinka
 adafruit_bbio
 https://files.pythonhosted.org/packages/6d/b8/15436b3d9925ed29aeb8f67c1b18b708f37c95e2b4106da8c9585c9d810c/adafruit-circuitpython-pm25-2.1.4.tar.gz
+adafruit-io
+adafruit-circuitpython-lps2x
+adafruit-circuitpython-lsm9ds1
+adafruit-circuitpython-hts221
