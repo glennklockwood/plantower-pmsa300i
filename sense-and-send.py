@@ -14,7 +14,7 @@ import busio
 import adafruit_pm25.i2c
 import Adafruit_IO
 
-from sensehat import SenseHAT
+from sensehat import SenseHAT, aqi2color
 
 SEND_KEYS = {
     "pm10 standard": None,
@@ -23,12 +23,12 @@ SEND_KEYS = {
     "pm10 env": None,
     "pm25 env": None,
     "pm100 env": None,
-    "particles 03um": "03um-particles",
-    "particles 05um": "05um-particles",
-    "particles 10um": "10um-particles",
-    "particles 25um": "25um-particles",
-    "particles 50um": "50um-particles",
-    "particles 100um": "100um-particles",
+#   "particles 03um": "03um-particles",
+#   "particles 05um": "05um-particles",
+#   "particles 10um": "10um-particles",
+#   "particles 25um": "25um-particles",
+#   "particles 50um": "50um-particles",
+#   "particles 100um": "100um-particles",
     "pm25 aqi": "pm2-dot-5-aqi",
 }
 
@@ -83,13 +83,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--username", default=os.environ.get("ADAFRUIT_IO_USERNAME"), help="Adafruit IO username")
     parser.add_argument("-k", "--key", default=os.environ.get("ADAFRUIT_IO_KEY"), help="Adafruit IO key")
-    parser.add_argument("-a", "--average-every", default=60, help="interval between reporting average, in seconds")
-    parser.add_argument("-s", "--sample-time", default=1, help="seconds between successive sampling")
+    parser.add_argument("-a", "--average-every", type=int, default=60, help="interval between reporting average, in seconds")
+    parser.add_argument("-s", "--sample-time", type=int, default=1, help="seconds between successive sampling")
     args = parser.parse_args()
 
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     pm25 = adafruit_pm25.i2c.PM25_I2C(i2c, None)
-    sensehat = SenseHAT(i2c)
+    hat = SenseHAT(i2c)
 
     aio_key = args.key
 
@@ -113,8 +113,6 @@ if __name__ == "__main__":
                 val = aqdata[key]
             elif key == "pm25 aqi" and "pm25 standard" in aqdata:
                 val = calculate_aqi(aqdata["pm25 standard"])
-                colors = aqi2color(val)
-                sensehat.ledmatrix.clear(*colors)
             else:
                 raise KeyError(f"Unknown metric key {key}")
 
@@ -130,13 +128,18 @@ if __name__ == "__main__":
         del_keys = set()
         for key, val in measurements.items():
             if val["count"] == args.average_every:
+                del_keys.add(key)
                 avg = val["sum"] / val["count"]
                 feed = SEND_KEYS.get(key)
                 if not feed:
                     continue
+                elif key == "pm25 aqi":
+                    print("Setting LED matrix to", str(colors))
+                    colors = aqi2color(avg)
+                    hat.ledmatrix.clear(*colors)
+                    hat.ledmatrix.update()
                 try:
                     send_data(avg, SEND_KEYS[key], aio)
-                    del_keys.add(key)
                 except requests.exceptions.ConnectionError:
                     sys.stderr.write("Connection to Adafruit IO failed\n")
                     aio = None
