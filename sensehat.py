@@ -4,26 +4,8 @@ import board
 import adafruit_hts221
 import adafruit_lps2x
 import adafruit_lsm9ds1
+import adafruit_pm25.i2c
 from adafruit_bus_device.i2c_device import I2CDevice
-
-class SenseHAT():
-    def __init__(self, i2c, lps25_address=0x5c, lsm9ds1_mag_address=0x1c, lsm9ds1_xg_address=0x6a, ledmatrix_address=0x46):
-        self.hts221 = adafruit_hts221.HTS221(i2c)
-        self.lps25 = adafruit_lps2x.LPS25(i2c_bus=i2c, address=lps25_address)
-        self.lsm9ds1 = adafruit_lsm9ds1.LSM9DS1_I2C(
-            i2c=i2c,
-            mag_address=lsm9ds1_mag_address,
-            xg_address=lsm9ds1_xg_address)
-        self.ledmatrix = LEDMatrix(i2c_bus=i2c, address=ledmatrix_address)
-
-    # self.lsm9ds1.acceleration
-    # self.lsm9ds1.magnetic
-    # self.lsm9ds1.gyro
-    # self.lsm9ds1.temperature
-    # self.hts221.relative_humidity
-    # self.hts221.temperature
-    # self.lps25.pressure
-    # self.lps25.temperature
 
 class LEDMatrix:
     def __init__(self, i2c_bus, address=0x46):
@@ -112,12 +94,12 @@ RANGES = [
 ]
 
 RANGES = [
-    (  50, 0x00, 0x08, 0x00), # green
-    ( 100, 0x08, 0x0c, 0x00), # yellow
-    ( 150, 0x18, 0x10, 0x00), # orange
-    ( 200, 0x18, 0x00, 0x00), # red
-    ( 300, 0x10, 0x00, 0x02), # purple
-    ( 400, 0x03, 0x00, 0x08), # really purple
+    (   0, 0x00, 0x08, 0x00), # green
+    (  50, 0x08, 0x0c, 0x00), # yellow
+    ( 100, 0x18, 0x10, 0x00), # orange
+    ( 150, 0x18, 0x00, 0x00), # red
+    ( 200, 0x10, 0x00, 0x02), # purple
+    ( 300, 0x03, 0x00, 0x08), # really purple
     (9999, 0x03, 0x00, 0x08),
 ]
 
