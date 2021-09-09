@@ -23,9 +23,9 @@ import Adafruit_IO
 from sensehat import LEDMatrix, aqi2color
 
 SEND_KEYS = {
-    "pm10 standard": None,
+    "pm10 standard": "m1-dot-0",
     "pm25 standard": "m2-dot-5",
-    "pm100 standard": None,
+    "pm100 standard": "m100",
     "pm10 env": None,
     "pm25 env": None,
     "pm100 env": None,
