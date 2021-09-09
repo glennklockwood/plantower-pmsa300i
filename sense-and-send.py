@@ -87,18 +87,28 @@ class SensorBox():
             "particles 100um",
         ])
         self._function_keys = {
-            "pm25 aqi": self.calculate_pm25_aqi,
+            "pm25 aqi": SensorBox.calculate_pm25_aqi,
+            "acceleration": lambda x: x.lsm9ds1.acceleration,
+            "magnetic": lambda x: x.lsm9ds1.magnetic,
+            "gyro": lambda x: x.lsm9ds1.gyro,
+            "temperature_lsm9ds1": lambda x: x.lsm9ds1.temperature,
+            "humidity": lambda x: x.hts221.relative_humidity,
+            "temperature": lambda x: x.hts221.temperature,
+            "temperature_hts221": lambda x: x.hts221.temperature,
+            "pressure": lambda x: x.lps25.pressure,
+            "temperature_lps25": lambda x: x.lps25.temperature,
+
         }
         self._sensor_map = {
-            "acceleration": self.lsm9ds1.acceleration,
-            "magnetic": self.lsm9ds1.magnetic,
-            "gyro": self.lsm9ds1.gyro,
-            "temperature_lsm9ds1": self.lsm9ds1.temperature,
-            "humidity": self.hts221.relative_humidity,
-            "temperature": self.hts221.temperature,
-            "temperature_hts221": self.hts221.temperature,
-            "pressure": self.lps25.pressure,
-            "temperature_lps25": self.lps25.temperature,
+#           "acceleration": self.lsm9ds1.acceleration,
+#           "magnetic": self.lsm9ds1.magnetic,
+#           "gyro": self.lsm9ds1.gyro,
+#           "temperature_lsm9ds1": self.lsm9ds1.temperature,
+#           "humidity": self.hts221.relative_humidity,
+#           "temperature": self.hts221.temperature,
+#           "temperature_hts221": self.hts221.temperature,
+#           "pressure": self.lps25.pressure,
+#           "temperature_lps25": self.lps25.temperature,
         }
 
     def store(self, key, val):
@@ -163,7 +173,7 @@ class SensorBox():
             return self._read_pmsa300i(key)
 
         if key in self._function_keys:
-            return self._function_keys[key]()
+            return self._function_keys[key](self)
 
         return self._sensor_map[key]
 
