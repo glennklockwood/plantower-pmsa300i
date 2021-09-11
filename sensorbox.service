@@ -1,8 +1,15 @@
+# Copy to /etc/systemd/system/
+# systemctl daemon-reload
+# systemctl enable sensorbox.service
 [Unit]
-Description=senses and send to Adafruit IO.
+Description=Senses and send to Adafruit IO
+After=network.target
+After=multi-user.target
 
 [Service]
 ExecStart=/bin/bash /home/glock/src/plantower-pmsa300i/sensorbox.sh
+User=debian
+Group=debian
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
