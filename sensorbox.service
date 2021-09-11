@@ -1,0 +1,8 @@
+[Unit]
+Description=senses and send to Adafruit IO.
+
+[Service]
+ExecStart=/bin/bash /home/glock/src/plantower-pmsa300i/sensorbox.sh
+
+[Install]
+WantedBy=multi-user.target
