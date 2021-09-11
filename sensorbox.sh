@@ -14,4 +14,4 @@ ENV_FILE="$HERE/adafruit/bin/activate"
 if [ -f "$ENV_FILE" ]; then
     . "$ENV_FILE"
 fi
-$HERE/sense-and-send.py -f "$CONFIG_FILE" 
+$HERE/sense-and-send.py -f "$CONFIG_FILE" --quiet
