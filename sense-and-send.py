@@ -220,13 +220,16 @@ def send_data(value, feed_name, aio):
         value: Value to send
         feed_name (str): Feed key on Adafruit IO to which value should be sent
             aio: Adafruit IO connection or None
+
+    Returns:
+        str or None: Adafruit IO feed to which data was sent, if any
     """
     if not aio or not feed_name:
-        print(f"Measured {value:.1f} for {feed_name}")
-    else:
-        print(f"Sending {value:.1f} to {feed_name}")
-        feed = aio.feeds(feed_name)
-        aio.send_data(feed.key, value)
+        return None
+
+    feed = aio.feeds(feed_name)
+    aio.send_data(feed.key, value)
+    return feed.key
 
 def load_config_file(config_file):
     """Reads config file and passes back findings.
@@ -256,12 +259,13 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--average-every", type=int, default=60, help="interval between reporting average, in seconds")
     parser.add_argument("-s", "--sample-time", type=int, default=1, help="seconds between successive sampling")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
+    parser.add_argument("-q", "--quiet", action="store_true", help="limit output")
     args = parser.parse_args()
 
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
     sensorbox = SensorBox(i2c)
     aio = None
-    if args.verbose: print("Connected to all sensors")
+    print("Connected to all sensors")
 
     # get adafruit io user/pass
     config = {}
@@ -310,12 +314,17 @@ if __name__ == "__main__":
                 sensorbox.delete(key)
                 if key == "pm25 aqi":
                     colors = aqi2color(mean_val)
-                    print("Setting LED matrix to", str(colors))
+                    if not args.quiet: print("Setting LED matrix to", str(colors))
                     sensorbox.ledmatrix.clear(*colors)
                     sensorbox.ledmatrix.update()
 
                 try:
-                    send_data(mean_val, feed, aio)
+                    feed_key = send_data(mean_val, feed, aio)
+                    if not args.quiet:
+                        if feed_key:
+                            print(f"Sending {mean_val:.1f} to {feed_key}")
+                        else:
+                            print(f"Measured {mean_val:.1f} for {feed}")
                 except requests.exceptions.ConnectionError:
                     warnings.warn("Connection to Adafruit IO failed")
                     aio = None
