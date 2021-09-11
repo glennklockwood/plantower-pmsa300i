@@ -228,10 +228,31 @@ def send_data(value, feed_name, aio):
         feed = aio.feeds(feed_name)
         aio.send_data(feed.key, value)
 
+def load_config_file(config_file):
+    """Reads config file and passes back findings.
+
+    Args:
+        config_file (str): Path to config file to load
+
+    Returns:
+        dict: key/value pairs loaded from configuration
+    """
+    results = {}
+    with open(config_file, "r") as cfgfile:
+        for line in cfgfile:
+            key, val = line.split("=", 1)
+            if key.startswith("export "):
+                key = key.split(None, 1)[-1]
+            val = val.strip().strip("\"")
+            key = key.strip()
+            results[key] = val
+    return results
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--username", default=os.environ.get("ADAFRUIT_IO_USERNAME"), help="Adafruit IO username")
-    parser.add_argument("-k", "--key", default=os.environ.get("ADAFRUIT_IO_KEY"), help="Adafruit IO key")
+    parser.add_argument("-f", "--config-file", default=None, type=str, help="config file containing adafruit io credentials")
+    parser.add_argument("-u", "--username", default=None, help="Adafruit IO username")
+    parser.add_argument("-k", "--key", default=None, help="Adafruit IO key")
     parser.add_argument("-a", "--average-every", type=int, default=60, help="interval between reporting average, in seconds")
     parser.add_argument("-s", "--sample-time", type=int, default=1, help="seconds between successive sampling")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
@@ -242,10 +263,32 @@ if __name__ == "__main__":
     aio = None
     if args.verbose: print("Connected to all sensors")
 
+    # get adafruit io user/pass
+    config = {}
+    if args.config_file:
+        config = load_config_file(args.config_file)
+    # first read from environment
+    if "ADAFRUIT_IO_USERNAME" in os.environ:
+        if args.verbose: print("Using ADAFRUIT_IO_USERNAME from environment")
+        adafruit_user = os.environ["ADAFRUIT_IO_USERNAME"]
+    if "ADAFRUIT_IO_KEY" in os.environ:
+        if args.verbose: print("Using ADAFRUIT_IO_KEY from environment")
+        adafruit_key = os.environ["ADAFRUIT_IO_KEY"]
+
+    # then load from config file
+    adafruit_user = config.get("ADAFRUIT_IO_USERNAME")
+    adafruit_key = config.get("ADAFRUIT_IO_KEY")
+
+    # then use whatever was passed explicitly on the command line
+    if args.username:
+        adafruit_user = args.username
+    if args.key:
+        adafruit_key = args.key
+
     while True:
         time.sleep(args.sample_time)
-        if not aio and args.username and args.key:
-            aio = Adafruit_IO.Client(args.username, args.key)
+        if not aio and adafruit_user and adafruit_key:
+            aio = Adafruit_IO.Client(adafruit_user, adafruit_key)
 
         for key, feed in SEND_KEYS.items():
             # don't bother measuring values we don't send
