@@ -1,9 +1,10 @@
-# Copy to /etc/systemd/system/
-# systemctl daemon-reload
-# systemctl enable sensorbox.service
+# 0. Edit ExecStart below to point to the correct path
+# 1. Copy (or symlink) to /etc/systemd/system/
+# 2. systemctl daemon-reload
+# 3. systemctl enable sensorbox.service
+
 [Unit]
-Description=Senses and send to Adafruit IO
-After=network.target
+Description=Senses and sends to Adafruit IO
 After=multi-user.target
 
 [Service]
