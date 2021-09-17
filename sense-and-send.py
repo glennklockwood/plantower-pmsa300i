@@ -260,6 +260,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--sample-time", type=int, default=1, help="seconds between successive sampling")
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
     parser.add_argument("-q", "--quiet", action="store_true", help="limit output")
+    parser.add_argument("-t", "--trailing-mean", type=int, default=10, help="number of samples to include in trailing mean for LED color")
     args = parser.parse_args()
 
     i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
@@ -289,6 +290,11 @@ if __name__ == "__main__":
     if args.key:
         adafruit_key = args.key
 
+    trailing_mean = None
+    trailing_iter = 0
+    if args.trailing_mean:
+        trailing_mean = [0] * args.trailing_mean
+
     while True:
         time.sleep(args.sample_time)
         if not aio and adafruit_user and adafruit_key:
@@ -308,13 +314,22 @@ if __name__ == "__main__":
 
             if args.verbose: print(f"sensed {key} = {val}, count={sensorbox.count(key)}")
 
+            # update rolling average and update LED display if enabled
+            if trailing_mean and key == "pm25 aqi":
+                trailing_mean[trailing_iter] = val
+                trailing_iter = (trailing_iter + 1) % args.trailing_mean
+                colors = aqi2color(sum(trailing_mean) / args.trailing_mean)
+                sensorbox.ledmatrix.clear(*colors)
+                sensorbox.ledmatrix.update()
+
             # calculate mean, send, and reset if we've got enough measurements
             if sensorbox.count(key) == args.average_every:
                 mean_val = sensorbox.mean(key)
                 sensorbox.delete(key)
-                if key == "pm25 aqi":
+                # only update LED matrix here if we aren't updating it based on
+                # trailing mean
+                if key == "pm25 aqi" and not args.trailing_mean:
                     colors = aqi2color(mean_val)
-                    if not args.quiet: print("Setting LED matrix to", str(colors))
                     sensorbox.ledmatrix.clear(*colors)
                     sensorbox.ledmatrix.update()
 
