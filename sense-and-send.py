@@ -340,6 +340,9 @@ if __name__ == "__main__":
                             print(f"Sending {mean_val:.1f} to {feed_key}")
                         else:
                             print(f"Measured {mean_val:.1f} for {feed}")
-                except (requests.exceptions.ConnectionError, Adafruit_IO.errors.RequestError):
+                except (IOError, Adafruit_IO.errors.AdafruitIOError):
                     warnings.warn("Connection to Adafruit IO failed")
+                    aio = None
+                except ValueError:
+                    warnings.warn("Adafruit IO returned invalid response")
                     aio = None
