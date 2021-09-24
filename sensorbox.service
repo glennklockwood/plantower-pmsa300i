@@ -11,6 +11,8 @@ After=multi-user.target
 ExecStart=/bin/bash /home/glock/src/plantower-pmsa300i/sensorbox.sh
 User=debian
 Group=debian
+Restart=on-failure
+RestartSec=30s
 
 [Install]
 WantedBy=default.target
